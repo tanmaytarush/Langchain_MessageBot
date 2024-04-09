@@ -5,38 +5,42 @@ from dotenv import load_dotenv
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
+
 load_dotenv()
 
-# App Configurations
-st.set_page_config(page_title="Stream Chatbot", page_icon = "*")
-st.title("Stream Chatbot")
+# app config
+st.set_page_config(page_title="Streaming bot", page_icon="🤖")
+st.title("PBL Code Generator")
 
 def get_response(user_query, chat_history):
+
     template = """
-        Generate Responses for a Chat Based on:
-        chat_history = {chat_history}
-        user_query = {user_query}
+    You are a helpful assistant. Answer the following questions considering the history of the conversation:
+
+    Chat history: {chat_history}
+
+    User question: {user_question}
     """
 
     prompt = ChatPromptTemplate.from_template(template)
+
     llm = ChatOpenAI()
-
+        
     chain = prompt | llm | StrOutputParser()
-
-    return chain.invoke({
-        "user_query": user_query,
+    
+    return chain.stream({
         "chat_history": chat_history,
+        "user_question": user_query,
     })
 
-
-# Session State
+# session state
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history =[
-        AIMessage(content = "Hello! How can I help you ?")
-    ] 
+    st.session_state.chat_history = [
+        AIMessage(content="Hello, I am a bot. How can I help you?"),
+    ]
 
-
-# Conversation
+    
+# conversation
 for message in st.session_state.chat_history:
     if isinstance(message, AIMessage):
         with st.chat_message("AI"):
@@ -45,18 +49,15 @@ for message in st.session_state.chat_history:
         with st.chat_message("Human"):
             st.write(message.content)
 
-
-# User Input
-user_query = st.chat_input("Type Your Message Here ! ")
-
-if user_query is not None and user_query!="":
+# user input
+user_query = st.chat_input("Type your message here...")
+if user_query is not None and user_query != "":
     st.session_state.chat_history.append(HumanMessage(content=user_query))
 
     with st.chat_message("Human"):
         st.markdown(user_query)
 
     with st.chat_message("AI"):
-        response = get_response(user_query, st.session_state.chat_history)
-        st.write(response)
+        response = st.write_stream(get_response(user_query, st.session_state.chat_history))
 
-    st.session_state.chat_history.append(response)
+    st.session_state.chat_history.append(AIMessage(content=response))
