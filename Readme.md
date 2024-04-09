@@ -11,6 +11,12 @@ To run the app, you will need to have Python installed on your machine. You can 
 pip install -r requirements.txt
 ```
 
+Specify the OpenAI_API_Key:
+
+```bash
+export OPENAI_API_KEY="Your OpenAI API Key"
+```
+
 Once you have installed the required packages, you can run the app by running the following command in your terminal:
 
 ```bash
